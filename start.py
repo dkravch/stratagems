@@ -1,12 +1,18 @@
+import random
+
 from aiohttp import web
 import asyncio
 from contextlib import suppress
+from base import Strategems
 
 
 class Periodic:
-    def __init__(self, func, time):
-        self.func = func
-        self.time = time
+
+    def __init__(self, base_delay, random_delay):
+        self.strategems = Strategems()
+        self.actual_strategem = self.strategems.get_random_strategem()
+        self.base_delay = base_delay
+        self.random_delay = random_delay
         self.is_started = False
         self._task = None
 
@@ -26,21 +32,29 @@ class Periodic:
 
     async def _run(self):
         while True:
-            await asyncio.sleep(self.time)
-            self.func()
+            await asyncio.sleep(self.base_delay + random.randint(0, self.random_delay + 1))
+            self.actual_strategem = self.strategems.get_random_strategem()
+            print(self.actual_strategem)
+            print('---')
 
 
-async def hello(request):
+class StrategemApplication:
 
-    return web.Response(text="Hello, world")
+    periodic = None
+
+    async def app_factory(self):
+        self.periodic = Periodic(base_delay=3, random_delay=3)
+        print('Start')
+        await self.periodic.start()
+        app = web.Application()
+        app.add_routes([web.get('/', self.current_strategem)])
+        return app
+
+    async def current_strategem(self, request):
+        return web.Response(text=f"{self.periodic.actual_strategem['name']}")
+
+    def __init__(self):
+        web.run_app(self.app_factory(), port=8999)
 
 
-async def app_factory():
-    p = Periodic(lambda: print('test'), 1)
-    print('Start')
-    await p.start()
-    app = web.Application()
-    app.add_routes([web.get('/', hello)])
-    return app
-
-web.run_app(app_factory(), port=8999)
+StrategemApplication()
