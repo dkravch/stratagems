@@ -1,9 +1,16 @@
 import random
+import os
 
 from aiohttp import web
 import asyncio
+import jinja2
+import aiohttp_jinja2
+
 from contextlib import suppress
+
 from base import Strategems
+
+########################################################################################################################
 
 
 class Periodic:
@@ -38,20 +45,41 @@ class Periodic:
             print('---')
 
 
+########################################################################################################################
+
+
 class StrategemApplication:
 
     periodic = None
 
     async def app_factory(self):
+
         self.periodic = Periodic(base_delay=3, random_delay=3)
         print('Start')
         await self.periodic.start()
+
         app = web.Application()
         app.add_routes([web.get('/', self.current_strategem)])
+
+        aiohttp_jinja2.setup(app,
+                             loader=jinja2.FileSystemLoader(os.path.join(os.getcwd(),
+                                                                         "templates")))
+
         return app
 
     async def current_strategem(self, request):
-        return web.Response(text=f"{self.periodic.actual_strategem['name']}")
+        context = {
+            'name': self.periodic.actual_strategem['name'],
+            'type': self.periodic.actual_strategem['chapter'],
+            'content': self.periodic.actual_strategem['content'],
+
+        }
+
+        response = aiohttp_jinja2.render_template("strategems.tpl",
+                                                  request,
+                                                  context=context)
+
+        return response
 
     def __init__(self):
         web.run_app(self.app_factory(), port=8999)
