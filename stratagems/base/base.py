@@ -6,8 +6,8 @@ import markdown_to_json
 
 class Stratagems:
 
-    def __init__(self):
-        with open("36.md") as f:
+    def __init__(self, stratagem_file_path=None):
+        with open(stratagem_file_path) as f:
             markdown_file_content = f.read()
         jsonified = markdown_to_json.jsonify(markdown_file_content)
         self.stratagem_dict = json.loads(jsonified)

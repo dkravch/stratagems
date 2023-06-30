@@ -8,7 +8,7 @@ import aiohttp_jinja2
 
 from contextlib import suppress
 
-from base import Stratagems
+from base.base import Stratagems
 
 ########################################################################################################################
 
@@ -16,7 +16,7 @@ from base import Stratagems
 class Periodic:
 
     def __init__(self, base_delay, random_delay):
-        self.stratagems = Stratagems()
+        self.stratagems = Stratagems('./data/36.md')
         self.actual_stratagem = self.stratagems.get_random_stratagem()
         self.base_delay = base_delay
         self.random_delay = random_delay
