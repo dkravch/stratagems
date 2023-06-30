@@ -8,7 +8,7 @@ import aiohttp_jinja2
 
 from contextlib import suppress
 
-from base import Strategems
+from base import Stratagems
 
 ########################################################################################################################
 
@@ -16,8 +16,8 @@ from base import Strategems
 class Periodic:
 
     def __init__(self, base_delay, random_delay):
-        self.strategems = Strategems()
-        self.actual_strategem = self.strategems.get_random_strategem()
+        self.stratagems = Stratagems()
+        self.actual_stratagem = self.stratagems.get_random_stratagem()
         self.base_delay = base_delay
         self.random_delay = random_delay
         self.is_started = False
@@ -40,15 +40,15 @@ class Periodic:
     async def _run(self):
         while True:
             await asyncio.sleep(self.base_delay + random.randint(0, self.random_delay + 1))
-            self.actual_strategem = self.strategems.get_random_strategem()
-            print(self.actual_strategem)
+            self.actual_stratagem = self.stratagems.get_random_stratagem()
+            print(self.actual_stratagem)
             print('---')
 
 
 ########################################################################################################################
 
 
-class StrategemApplication:
+class StratagemApplication:
 
     periodic = None
 
@@ -59,7 +59,7 @@ class StrategemApplication:
         await self.periodic.start()
 
         app = web.Application()
-        app.add_routes([web.get('/', self.current_strategem)])
+        app.add_routes([web.get('/', self.current_stratagem)])
 
         aiohttp_jinja2.setup(app,
                              loader=jinja2.FileSystemLoader(os.path.join(os.getcwd(),
@@ -67,15 +67,15 @@ class StrategemApplication:
 
         return app
 
-    async def current_strategem(self, request):
+    async def current_stratagem(self, request):
         context = {
-            'name': self.periodic.actual_strategem['name'],
-            'type': self.periodic.actual_strategem['chapter'],
-            'content': self.periodic.actual_strategem['content'],
+            'name': self.periodic.actual_stratagem['name'],
+            'type': self.periodic.actual_stratagem['chapter'],
+            'content': self.periodic.actual_stratagem['content'],
 
         }
 
-        response = aiohttp_jinja2.render_template("strategems.tpl",
+        response = aiohttp_jinja2.render_template("stratagems.tpl",
                                                   request,
                                                   context=context)
 
@@ -85,4 +85,4 @@ class StrategemApplication:
         web.run_app(self.app_factory(), port=8999)
 
 
-StrategemApplication()
+StratagemApplication()
