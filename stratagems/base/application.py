@@ -50,13 +50,16 @@ class Periodic:
 
 class StratagemApplication:
 
-    periodic = None
+    periodic_task = None
 
-    async def app_factory(self):
+    async def app_factory(self,
+                          periodic_task_base_delay,
+                          periodic_task_random_delay):
 
-        self.periodic = Periodic(base_delay=3, random_delay=3)
+        self.periodic_task = Periodic(base_delay=periodic_task_base_delay,
+                                      random_delay=periodic_task_random_delay)
         print('Start')
-        await self.periodic.start()
+        await self.periodic_task.start()
 
         app = web.Application()
         app.add_routes([web.get('/', self.current_stratagem)])
@@ -69,9 +72,9 @@ class StratagemApplication:
 
     async def current_stratagem(self, request):
         context = {
-            'name': self.periodic.actual_stratagem['name'],
-            'type': self.periodic.actual_stratagem['chapter'],
-            'content': self.periodic.actual_stratagem['content'],
+            'name': self.periodic_task.actual_stratagem['name'],
+            'type': self.periodic_task.actual_stratagem['chapter'],
+            'content': self.periodic_task.actual_stratagem['content'],
 
         }
 
@@ -81,8 +84,7 @@ class StratagemApplication:
 
         return response
 
-    def run(self):
-        web.run_app(self.app_factory(), port=8999)
-
-
-StratagemApplication()
+    def run(self, port=8999, periodic_task_base_delay=3, periodic_task_random_delay=3):
+        web.run_app(self.app_factory(periodic_task_base_delay=periodic_task_base_delay,
+                                     periodic_task_random_delay=periodic_task_random_delay),
+                    port=port)  # TODO Parameterize port and periodic delay
